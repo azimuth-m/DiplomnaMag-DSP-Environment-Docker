@@ -1,0 +1,3 @@
+Ubuntu 24
+
+sudo apt-get install yq wget
