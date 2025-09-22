@@ -190,4 +190,3 @@ echo -e "    Builds a docker image, with neded files to develop for target Hexag
 log-warn "dsp-env-run-docker-container"
 echo -e "    Runs a docker container, in privilaged mode, with usb devices mounted and \n`
         `    .ssh and .gitconfig of current user propagated."
-

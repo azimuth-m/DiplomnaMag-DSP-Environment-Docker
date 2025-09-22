@@ -61,8 +61,8 @@ RUN if getent group ${ARG_DSP_ENV_HOST_GROUP_ID}; then                          
                                                                                                    \
     # Get needed packages
     apt update                                                                                  && \
-    apt install vim android-tools-adb android-tools-fastboot git curl wget git xz-utils            \
-        build-essential libncurses6 unzip -y
+    apt install sudo python3 python-is-python3 vim android-tools-adb android-tools-fastboot        \
+    git curl wget git xz-utils build-essential libncurses6 unzip lsb-release cmake clang -y
 
 # Switch to non-root user
 USER ${ARG_DSP_ENV_HOST_USER}:${ARG_DSP_ENV_HOST_GROUP}
@@ -86,8 +86,16 @@ RUN tar xfv                                                                     
     ${DSP_ENV_PATH_TO_GCC_ARM}/${ARG_DSP_ENV_ARM_TOOLCHAIN_ARCHIVE_NAME}                           \
     --directory=${DSP_ENV_PATH_TO_GCC_ARM}                                                      && \
                                                                                                    \
-    # Source color print script, build scripts and device setup scripts
+    # Source color print script
     echo ". ${DSP_ENV_MEMCPY_SRC_DIR}/scripts/dsp_env_color_log.sh"                                \
         >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                               && \
-    find "${DSP_ENV_MEMCPY_SRC_DIR}" -type f -name "*.sh" -print \ | sed 's|^|. |'                 \
-        >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc
+                                                                                                   \
+    # Source other scripts
+    echo 'for SCRIPT in $(find "${DSP_ENV_MEMCPY_SRC_DIR}" -type f -name "*.sh"); do'              \
+         >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                              && \
+    echo '    [ -f "${SCRIPT}" ] && . "${SCRIPT}"'                                                 \
+         >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                              && \
+    echo 'done'                                                                                    \
+         >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                              && \
+    echo '. ${DSP_ENV_PATH_TO_HEXAGON}/setup_sdk_env.source'                                                                                    \
+         >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc
