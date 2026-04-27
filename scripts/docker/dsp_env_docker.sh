@@ -18,6 +18,7 @@
 function dsp-env-build-docker-image() {
     local DOCKER_IMAGE_NAME
     local PATH_TO_HEXAGON_SDK_ROOT
+    local HEXAGON_VER
     local AARCH64_CROSS_COMPILER_URL
     local AARCH64_CROSS_COMPILER_ASC_URL
     local SAMPLE_MEMCPY_REPO_SSH_URL
@@ -36,6 +37,7 @@ function dsp-env-build-docker-image() {
     set -o pipefail
     yq-parse '.DSP_ENV_DOCKER_IMAGE_NAME'              'DOCKER_IMAGE_NAME'
     yq-parse '.DSP_ENV_PATH_TO_HEXAGON_SDK_ROOT'       'PATH_TO_HEXAGON_SDK_ROOT'
+    yq-parse '.DSP_ENV_HEXAGON_VER'                    'HEXAGON_VER'
     yq-parse '.DSP_ENV_AARCH64_CROSS_COMPILER_URL'     'AARCH64_CROSS_COMPILER_URL'
     yq-parse '.DSP_ENV_AARCH64_CROSS_COMPILER_ASC_URL' 'AARCH64_CROSS_COMPILER_ASC_URL'
     yq-parse '.DSP_ENV_SAMPLE_MEMCPY_REPO_SSH_URL'     'SAMPLE_MEMCPY_REPO_SSH_URL'
@@ -113,6 +115,7 @@ function dsp-env-build-docker-image() {
                     `${AARCH64_CROSS_COMPILER_URL})"                                               \
             --build-arg ARG_DSP_ENV_HEXAGON_TOOLCHAIN_DIRECTORY_NAME="$(basename `
                     `${PATH_TO_HEXAGON_SDK_ROOT})"                                                 \
+            --build-ard ARG_DSP_ENV_HEXAGON_VER="${HEXAGON_VER}"                                   \
             --build-arg ARG_DSP_ENV_TMP_DIR_BASENAME="$(basename ${PATH_TO_TMP_DIR})"              \
             --build-arg ARG_DSP_ENV_MEMCPY_REPO_DIRECTORY_NAME="$(basename `
                     `${SAMPLE_MEMCPY_REPO_SSH_URL} .git)"                                          \

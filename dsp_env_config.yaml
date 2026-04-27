@@ -1,7 +1,10 @@
 DSP_ENV_DOCKER_IMAGE_NAME:              "dsp-env-img"
 DSP_ENV_DOCKER_CONTAINER_NAME:          "dsp-env-container"
 
-DSP_ENV_PATH_TO_HEXAGON_SDK_ROOT:       "/home/mfandakov/SDK/hexagon5.x/5.5.5.0"
+DSP_ENV_PATH_TO_HEXAGON_SDK_ROOT:       "/local/mnt/workspace/Qualcomm/Hexagon_SDK/5.4.0.3"
+
+# Version of the hexagon dsp (66, 68, 73 ...)
+DSP_ENV_HEXAGON_VER:                    "68"
 
 # Has to have a filename as a basename
 DSP_ENV_AARCH64_CROSS_COMPILER_URL:     "https://developer.arm.com/-/media/Files/downloads/\
@@ -12,6 +15,6 @@ DSP_ENV_AARCH64_CROSS_COMPILER_URL:     "https://developer.arm.com/-/media/Files
 DSP_ENV_AARCH64_CROSS_COMPILER_ASC_URL: "https://developer.arm.com/-/media/Files/downloads/\
                                          gnu-a/9.2-2019.12/binrel/\
                                          gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu.tar.xz.asc"
-                                         
+
 # Has to have a filename as a basename
 DSP_ENV_SAMPLE_MEMCPY_REPO_SSH_URL: "git@github.com:azimuth-m/DiplomnaMag-DSP-Environment-SampleDSPMemcpy.git"
