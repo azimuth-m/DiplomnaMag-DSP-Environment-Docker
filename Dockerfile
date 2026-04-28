@@ -63,14 +63,19 @@ RUN if getent group ${ARG_DSP_ENV_HOST_GROUP_ID}; then                          
             chown ${ARG_DSP_ENV_HOST_USER}:${ARG_DSP_ENV_HOST_GROUP} ${DSP_ENV_MEMCPY_SRC_DIR}  && \
                                                                                                    \
     # Enable focal repos, in order to install ncurses5 - Dependency of hexagon sdk
-    echo "deb http://security.ubuntu.com/ubuntu focal-security main universe"                    > \
-            /etc/apt/sources.list.d/ubuntu-focal-sources.list                                   && \
+    # echo "deb http://security.ubuntu.com/ubuntu focal-security main universe"                    > \
+        #    /etc/apt/sources.list.d/ubuntu-focal-sources.list                                    && \
                                                                                                    \
     # Get needed packages
     apt update                                                                                  && \
     apt install sudo python3 python-is-python3 vim android-tools-adb android-tools-fastboot        \
-            git curl wget xz-utils build-essential libncurses6 libncurses5 unzip file              \
-            lsb-release cmake clang iproute2 iputils-ping -y
+            git curl wget xz-utils build-essential libncurses6 unzip file                          \
+            lsb-release cmake clang iproute2 iputils-ping -y                                    && \
+                                                                                                   \
+    # Fix libncurses5 requirement for hexagon, by symlinking version 6 to 5
+    ln -s /usr/lib/x86_64-linux-gnu/libncursesw.so.6 /usr/lib/x86_64-linux-gnu/libncursesw.so.5 && \
+    ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5
+
 
 # Switch to non-root user
 USER ${ARG_DSP_ENV_HOST_USER}:${ARG_DSP_ENV_HOST_GROUP}

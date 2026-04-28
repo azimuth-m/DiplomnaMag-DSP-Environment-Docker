@@ -12,7 +12,7 @@ function log-success() {
     local GREEN="\033[0;32m"
     local NOCOL="\033[0m"
 
-    echo -e "${YELLOW}${@}${NOCOL}"
+    echo -e "${GREEN}${@}${NOCOL}"
     return 0
 }
 
