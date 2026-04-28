@@ -62,10 +62,15 @@ RUN if getent group ${ARG_DSP_ENV_HOST_GROUP_ID}; then                          
     mkdir -p ${DSP_ENV_MEMCPY_SRC_DIR}                                                          && \
             chown ${ARG_DSP_ENV_HOST_USER}:${ARG_DSP_ENV_HOST_GROUP} ${DSP_ENV_MEMCPY_SRC_DIR}  && \
                                                                                                    \
+    # Enable focal repos, in order to install ncurses5 - Dependency of hexagon sdk
+    echo "deb http://security.ubuntu.com/ubuntu focal-security main universe"                    > \
+            /etc/apt/sources.list.d/ubuntu-focal-sources.list                                   && \
+                                                                                                   \
     # Get needed packages
     apt update                                                                                  && \
     apt install sudo python3 python-is-python3 vim android-tools-adb android-tools-fastboot        \
-    git curl wget git xz-utils build-essential libncurses6 unzip lsb-release cmake clang -y
+            git curl wget xz-utils build-essential libncurses6 libncurses5 unzip file              \
+            lsb-release cmake clang iproute2 iputils-ping -y
 
 # Switch to non-root user
 USER ${ARG_DSP_ENV_HOST_USER}:${ARG_DSP_ENV_HOST_GROUP}
@@ -100,5 +105,5 @@ RUN tar xfv                                                                     
          >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                              && \
     echo 'done'                                                                                    \
          >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                              && \
-    echo '. ${DSP_ENV_PATH_TO_HEXAGON}/setup_sdk_env.source'                                                                                    \
+    echo '. ${DSP_ENV_PATH_TO_HEXAGON}/setup_sdk_env.source'                                       \
          >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc
