@@ -1,7 +1,8 @@
 DSP_ENV_DOCKER_IMAGE_NAME:              "dsp-env-img"
 DSP_ENV_DOCKER_CONTAINER_NAME:          "dsp-env-container"
 
-DSP_ENV_PATH_TO_HEXAGON_SDK_ROOT:       "/local/mnt/workspace/Qualcomm/Hexagon_SDK/5.4.0.3"
+# DSP_ENV_PATH_TO_HEXAGON_SDK_ROOT:       "/home/mfandakov/sdk/5.4.0.3"
+DSP_ENV_PATH_TO_HEXAGON_SDK_ROOT:       "/local/mnt/workspace/Qualcomm/Hexagon_SDK/5.5.6.0"
 
 # Version of the hexagon dsp (66, 68, 73 ...)
 DSP_ENV_HEXAGON_VER:                    "68"

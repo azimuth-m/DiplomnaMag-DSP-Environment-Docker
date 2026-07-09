@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Detect successfully source setenv,sh
+# Detect successfully sourced setenv.sh
 [ -z ${G_DSP_ENV_ROOT} ]                                                                        && {
     echo "Environment setup shell \"setenv.sh\" file must be sourced first."
     return 1
@@ -15,7 +15,9 @@
     exit 1
 }
 
+# ${1} [optional] - Docker image tag name. If present, will be appended to the docker image name.
 function dsp-env-build-docker-image() {
+    local IMAGE_TAG="${1:-}"
     local DOCKER_IMAGE_NAME
     local PATH_TO_HEXAGON_SDK_ROOT
     local HEXAGON_VER
@@ -45,6 +47,11 @@ function dsp-env-build-docker-image() {
         log-error "In function ${FUNCNAME}(): Failed to parse ${G_DSP_ENV_PATH_TO_CONF_YAML}"
         return 1
     }
+
+    # Append tag to docker image name if present.
+    # NOTE: Running the container should have the same tag if present
+    [ -n "${IMAGE_TAG}" ] && DOCKER_IMAGE_NAME="${DOCKER_IMAGE_NAME}-${IMAGE_TAG}"
+
     # Enable rc masking again
     set +o pipefail
 
@@ -131,7 +138,11 @@ function dsp-env-build-docker-image() {
     return 0
 }
 
+# ${1} [optional] - Docker image tag. If the image is generated with a tag, this is [mandatory].
+# ${2} [optional] - Docker container tag. Tag is appended to container name.
 function dsp-env-run-docker-container() {
+    local IMAGE_TAG="${1:-}"
+    local CONTAINER_TAG="${2:-}"
     local DOCKER_IMAGE_NAME
     local DOCKER_CONTAINER_NAME
 
@@ -144,6 +155,11 @@ function dsp-env-run-docker-container() {
         log-error "In function ${FUNCNAME}(): Failed to parse ${G_DSP_ENV_PATH_TO_CONF_YAML}"
         return 1
     }
+
+    # Append image and container name tags if present.
+    [ -n "${IMAGE_TAG}" ] && DOCKER_IMAGE_NAME="${DOCKER_IMAGE_NAME}-${IMAGE_TAG}"
+    [ -n "${CONTAINER_TAG}" ] && DOCKER_CONTAINER_NAME="${DOCKER_CONTAINER_NAME}-${CONTAINER_TAG}"
+
     set +o pipefail
 
     # DOCKER RUN ###################################################################################
@@ -187,9 +203,11 @@ function dsp-env-run-docker-container() {
 }
 
 log-info "#################################### DOCKER ####################################"
-log-warn "dsp-env-build-docker-image"
+log-info "\nNOTE: If image is generated with a tag,\n`
+        `the container must also have the tag as first argument.\n"
+log-warn "dsp-env-build-docker-image <optional_image_tag>"
 echo -e "    Builds a docker image, with neded files to develop for target Hexagon DSP\n"
 
-log-warn "dsp-env-run-docker-container"
+log-warn "dsp-env-run-docker-container <optional_image_tag> <optional_container_tag>"
 echo -e "    Runs a docker container, in privilaged mode, with usb devices mounted and \n`
         `    .ssh and .gitconfig of current user propagated."

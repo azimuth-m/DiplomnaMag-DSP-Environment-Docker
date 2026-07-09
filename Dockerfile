@@ -1,5 +1,7 @@
 FROM ubuntu:noble AS dsp-env
 
+SHELL ["/bin/bash", "-lc"]
+
 # Arguments passed via docker build
 ARG ARG_DSP_ENV_HOST_USER_ID
 ARG ARG_DSP_ENV_HOST_USER
@@ -21,6 +23,7 @@ ENV DSP_ENV_HEXAGON_VER=${ARG_DSP_ENV_HEXAGON_VER}
 ENV DSP_ENV_PATH_TO_SRC=${DSP_ENV_BASE_DIR}/src
 ENV DSP_ENV_MEMCPY_SRC_DIR=${DSP_ENV_PATH_TO_SRC}/memcpy_src
 ENV DSP_ENV_INSTALL_DIR=${DSP_ENV_BASE_DIR}/install
+ENV DSP_ENV_BUILD_DIR=${DSP_ENV_BASE_DIR}/build
 
 # Force reuse of existing group
 RUN if getent group ${ARG_DSP_ENV_HOST_GROUP_ID}; then                                             \
@@ -62,20 +65,20 @@ RUN if getent group ${ARG_DSP_ENV_HOST_GROUP_ID}; then                          
     mkdir -p ${DSP_ENV_MEMCPY_SRC_DIR}                                                          && \
             chown ${ARG_DSP_ENV_HOST_USER}:${ARG_DSP_ENV_HOST_GROUP} ${DSP_ENV_MEMCPY_SRC_DIR}  && \
                                                                                                    \
-    # Enable focal repos, in order to install ncurses5 - Dependency of hexagon sdk
-    # echo "deb http://security.ubuntu.com/ubuntu focal-security main universe"                    > \
-        #    /etc/apt/sources.list.d/ubuntu-focal-sources.list                                    && \
                                                                                                    \
     # Get needed packages
     apt update                                                                                  && \
     apt install sudo python3 python-is-python3 vim android-tools-adb android-tools-fastboot        \
             git curl wget xz-utils build-essential libncurses6 unzip file                          \
-            lsb-release cmake clang iproute2 iputils-ping -y                                    && \
+            lsb-release cmake clang iproute2 iputils-ping python3-pip                              \
+            make libssl-dev zlib1g-dev libbz2-dev libreadline-dev                                  \
+            libsqlite3-dev llvm libncurses5-dev libncursesw5-dev tk-dev libffi-dev                 \
+            liblzma-dev python3-openssl -y                                                      && \
                                                                                                    \
     # Fix libncurses5 requirement for hexagon, by symlinking version 6 to 5
+    # NOTE: Might be redundant because we have libncurses5-dev libncursesw5-dev
     ln -s /usr/lib/x86_64-linux-gnu/libncursesw.so.6 /usr/lib/x86_64-linux-gnu/libncursesw.so.5 && \
     ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5
-
 
 # Switch to non-root user
 USER ${ARG_DSP_ENV_HOST_USER}:${ARG_DSP_ENV_HOST_GROUP}
@@ -97,6 +100,7 @@ COPY --chown=${ARG_DSP_ENV_HOST_USER}:${ARG_DSP_ENV_HOST_GROUP}                 
 
 RUN tar xfv                                                                                        \
     ${DSP_ENV_PATH_TO_GCC_ARM}/${ARG_DSP_ENV_ARM_TOOLCHAIN_ARCHIVE_NAME}                           \
+    --strip-components 1                                                                           \
     --directory=${DSP_ENV_PATH_TO_GCC_ARM}                                                      && \
                                                                                                    \
     # Source color print script
@@ -105,10 +109,24 @@ RUN tar xfv                                                                     
                                                                                                    \
     # Source other scripts
     echo 'for SCRIPT in $(find "${DSP_ENV_MEMCPY_SRC_DIR}" -type f -name "*.sh"); do'              \
-         >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                              && \
+        >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                               && \
     echo '    [ -f "${SCRIPT}" ] && . "${SCRIPT}"'                                                 \
-         >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                              && \
+        >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                               && \
     echo 'done'                                                                                    \
-         >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                              && \
+        >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                               && \
     echo '. ${DSP_ENV_PATH_TO_HEXAGON}/setup_sdk_env.source'                                       \
-         >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc
+        >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                               && \
+                                                                                                   \
+    # Install pyenv, with python 3.11. Needed for Hexagon signer script
+    curl https://pyenv.run | bash                                                               && \
+        export PYENV_ROOT="$HOME/.pyenv"                                                        && \
+        export PATH="$PYENV_ROOT/bin:$PATH"                                                     && \
+        eval "$(pyenv init -)"                                                                  && \
+        pyenv install 3.11                                                                      && \
+        pyenv global 3.11                                                                       && \
+    echo 'export PYENV_ROOT="$HOME/.pyenv"'                                                        \
+        >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                               && \
+    echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"'                         \
+        >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc                                               && \
+    echo 'eval "$(pyenv init -)"'                                                                  \
+        >> /home/${ARG_DSP_ENV_HOST_USER}/.bashrc
